@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My todo app</title>
+  <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f3f3f4;
+      font-family: 'Josefin Sans', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <todo-app></todo-app>
+  <script type="module">
+    import { LitElement, html, css } from 'https://unpkg.com/lit-element?module';
+    import './components/todo-list.js';
+
+    const author = 'devbarceinas'
+    const myCv = 'https://devbarceinas.github.io/';
+    const footerTemplate = html`
+      <footer>
+        Made with love by <a href="${myCv}">${author}</a>
+      </footer>
+    `;
+
+    class TodoApp extends LitElement {
+      static get properties() {
+        return {
+          todos: { type: Array },
+        }
+      }
+
+      static get styles() {
+        return css`
+          :host {
+            color: #3D424E;
+          }
+
+          .container {
+            width: 400px;
+            margin-top: 100px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background: #f3f3f4;
+            border-radius: 20px;
+            box-shadow: 9px 9px 10px 0 #e6e7e9, -9px -9px 10px 0 #ffffff;
+          }
+
+          .title-todo {
+            text-align: center;
+          }
+
+          input[type=text] {
+            width: 100%;
+            border: none;
+            border-bottom: 2px solid #3D424E;
+            background-color: #f3f3f4;
+          }
+
+          .form-button_todo > button {
+            width: 100%;
+            text-transform: uppercase;
+            background-color: #3D424E;
+            border-radius: 10px;
+            padding: 10px;
+            color: #fafafa;
+            border: none;
+            box-shadow: 9px 9px 10px 0 #e6e7e9, -9px -9px 10px 0 #ffffff;
+          }
+
+          .form-button_todo {
+            padding: 10px 0 0 0;
+          }
+
+          ul {
+            list-style: none;
+            padding: 0;
+          }
+
+          .footer-todo {
+            margin-top: 20px; 
+            text-align: center;
+          }
+        `;
+      }
+
+      constructor() {
+        super();
+        this.todos = [
+          { text: 'Aprender Node', finished: true },
+          { text: 'Aprender Lit Element', finished: false },
+          { text: 'Practicar lo aprendido', finished: false },
+        ];
+      }
+
+      render() {
+        const finishedCount = this.todos.filter(e => e.finished).length;
+        const unfinishedCount = this.todos.length - finishedCount; 
+
+        return html`
+          <div class="container">
+            <h1 class="title-todo">My Todo App</h1>
+
+            <input type="text" id="addTodoInput" placeholder="Name" />
+            <div class="form-button_todo">
+              <button @click="${this._addTodo}">Add Task</button>
+            </div>
+
+            <todo-list
+              .todos=${this.todos}
+              @change-todo-finished=${this._changeTodoFinished}
+              @remove-todo=${this._removeTodo}
+            >
+            </todo-list>
+
+            <div>
+              Total finished: ${finishedCount}
+            </div>
+            <div>
+              Total unfinished: ${unfinishedCount}
+            </div>
+            
+          </div>
+          <div class="footer-todo">
+            ${footerTemplate}
+          </div>  
+        `;
+      }
+
+      _changeTodoFinished(e) {
+        const {changedTodo, finished} = e.detail;
+        this.todos = this.todos.map((todo) => {
+          if (todo !== changedTodo) {
+            return todo;
+          }
+          return {
+            ...changedTodo,
+            finished
+          };
+        }); 
+      }
+
+      _removeTodo(e) {
+        this.todos = this.todos.filter(todo => todo !== e.detail);
+      }
+
+      _addTodo() {
+        const input = this.shadowRoot.getElementById('addTodoInput');
+        const text = input.value;
+        input.value = '';
+
+        if (text === '') {
+          alert('Empty fields!');
+        } else {
+          this.todos = [
+            ...this.todos,
+            {text, finished: false}
+          ];
+          // this.requestUpdate();
+        }
+      }
+    }
+
+    customElements.define('todo-app', TodoApp);
+  </script>
+</body>
+</html>
